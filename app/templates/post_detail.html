@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="post-detail">
+        <div class="post_content">
+            <h2>{{ post.title }}</h2>
+            <p>Note: {{ post.content }}</p>
+        </div>
+        
+        <div class="poster">
+            Posted by <a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a>
+            on {{ post.date_posted.strftime('%Y-%m-%d') }}
+        </div>
+
+        <!-- Display like count -->
+        <div class="like-count">Likes: {{ post.likes|length }}</div>
+
+        <!-- Like/Unlike button -->
+        {% if current_user.is_authenticated %}
+        <div class="like-button">
+            <form method="POST" action="{{ url_for('like_post', post_id=post.id) }}">
+                {{ form.hidden_tag() }}
+                {% set liked = post.likes|map(attribute='user_id')|list %}
+                {% if current_user.id in liked %}
+                <button type="submit">Unlike</button>
+                {% else %}
+                <button type="submit">Like</button>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Edit/Delete Buttons for Post Owner -->
+        {% if current_user.is_authenticated and current_user == post.author %}
+        <div class="post-actions">
+            <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-primary">Edit</a>
+            <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display: inline;">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="comments">
+        <h3>Comments:</h3>
+        {% for comment in post.comments %}
+        <div class="comment">
+            <p>
+                {{ comment.content }} - by 
+                <a href="{{ url_for('user_profile', username=comment.author.username) }}">{{ comment.author.username }}</a>
+            </p>
+        </div>
+        {% else %}
+        <p class="no-comments">No comments yet. Be the first to comment!</p>
+        {% endfor %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="add-comment-form">
+        <h3>Add a Comment:</h3>
+        <form method="POST" action="{{ url_for('comment', post_id=post.id) }}">
+            {{ form.hidden_tag() }}
+            <div>
+                {{ form.content.label }}<br>
+                {{ form.content(rows=4, cols=50) }}
+            </div>
+            <div>
+                <button type="submit">{{ form.submit() }}</button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <p>You must be logged in to comment or like posts.</p>
+    {% endif %}
+</div>
+{% endblock %}
