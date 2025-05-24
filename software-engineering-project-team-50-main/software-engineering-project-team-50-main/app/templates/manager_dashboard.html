@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - Car Share{% endblock %}
+
+
+{% block content %}
+<!-- Main Layout: Sidebar + Content -->
+<div class="max-w-7xl mx-auto mt-6 px-4 md:px-6 flex flex-col md:flex-row gap-6">
+  
+  <!-- Sidebar -->
+  <aside x-data="{ tab: 'users' }"
+       class="w-full md:w-1/4 bg-white shadow-xl rounded-2xl p-6 border border-gray-100 sticky md:top-0 md:h-screen md:overflow-y-auto pb-10">
+
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Manager Menu</h3>
+    <ul class="space-y-4 text-sm">
+      <li @click="$dispatch('set-tab','users')"
+          :class="tab==='users' ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-800'"
+          class="cursor-pointer rounded-lg p-3 hover:bg-blue-100 transition">Users</li>
+      <li @click="$dispatch('set-tab','finance')"
+          :class="tab==='finance' ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-800'"
+          class="cursor-pointer rounded-lg p-3 hover:bg-blue-100 transition">Finance</li>
+      <li @click="$dispatch('set-tab','bookings')"
+          :class="tab==='bookings' ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-800'"
+          class="cursor-pointer rounded-lg p-3 hover:bg-blue-100 transition">Bookings</li>
+      <li @click="$dispatch('set-tab','support')"
+          :class="tab==='support' ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-800'"
+          class="cursor-pointer rounded-lg p-3 hover:bg-blue-100 transition">Support</li>
+      <li @click="$dispatch('set-tab','reports')" :class="tab==='support' ? 'bg-blue-50 text-blue-600' : 'bg-white text-gray-800" class="cursor-pointer rounded-lg p-3 hover:bg-blue-100 transition">Reports & Issues</li>
+    </ul>
+  </aside>
+
+  <!-- Content Pane -->
+  <main x-data="{ tab: 'users' }"
+      @set-tab.window="tab = $event.detail"
+      class="w-full md:w-3/4 overflow-y-auto md:ml-6 relative mt-6 md:mt-0">
+      <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="w-full md:w-3/4 md:ml-6 mb-4 space-y-2">
+        {% for category, message in messages %}
+          <div class="rounded-lg p-4 text-sm text-white 
+                      {{ 'bg-green-500' if category == 'success' else '' }}
+                      {{ 'bg-red-500' if category == 'danger' else '' }}
+                      {{ 'bg-blue-500' if category == 'info' else '' }}
+                      {{ 'bg-yellow-500' if category == 'warning' else '' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+
+    <!-- Welcome Banner -->
+    <header class="py-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-center text-white rounded-2xl mb-6">
+      <h2 class="text-4xl font-bold">Welcome, {{ current_user.firstname }} {{ current_user.lastname }}!</h2>
+      <p class="text-lg mt-2">Manage your platform—users, finance, bookings, and support.</p>
+    </header>
+
+    <!-- Users Section -->
+    <section x-show="tab==='users'" class="mb-6">
+      <div class="bg-white shadow-xl rounded-2xl p-6">
+        <h2 class="text-2xl font-bold mb-4">Users &amp; Roles</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600">Total Users</p>
+            <p class="text-3xl font-bold mt-1">{{ users|length }}</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <input id="userFilter"
+                 type="text"
+                 onkeyup="filterUsers()"
+                 placeholder="Search users by name or email..."
+                 class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full leading-normal">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">ID</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Name</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Email</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Role</th>
+              </tr>
+            </thead>
+            <tbody id="userTable">
+              {% for user in users %}
+              <tr class="border-b hover:bg-gray-50">
+                <td class="px-5 py-4 text-sm">{{ user.id }}</td>
+                <td class="px-5 py-4 text-sm">{{ user.firstname }} {{ user.lastname }}</td>
+                <td class="px-5 py-4 text-sm">{{ user.email }}</td>
+                <td class="px-5 py-4 text-sm">{{ user.role.value }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section x-show="tab==='reports'" class="mb-6">
+  <div class="bg-white shadow-xl rounded-2xl p-6">
+    <h2 class="text-2xl font-bold mb-4">Reports & Issues</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full leading-normal">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">User</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Driver</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Date</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Complaint</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in support_issues if issue.issue_type == 'Complaint' %}
+            <tr class="border-b hover:bg-gray-50">
+              <td class="px-5 py-4 text-sm">{{ issue.user.firstname }} {{ issue.user.lastname }}</td>
+              <td class="px-5 py-4 text-sm">{{ issue.journey.driver.firstname }} {{ issue.journey.driver.lastname if issue.journey and issue.journey.driver else '-' }}</td>
+              <td class="px-5 py-4 text-sm">{{ issue.created_date.strftime('%d %b %Y') if issue.created_date else '—' }}</td>
+              <td class="px-5 py-4 text-sm">{{ issue.issue_description }}</td>
+              <td class="px-5 py-4 text-sm text-{{ 'red' if issue.issue_status == 'open' else 'green' }}-500">
+                {{ issue.issue_status.capitalize() }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+    <!-- Finance Section -->
+    <section x-show="tab==='finance'"
+             x-data="financeDashboard()"
+             @booking-updated.window="onBookingUpdated($event.detail.delta)"
+             class="mb-6">
+      <div class="bg-white shadow-xl rounded-2xl p-6">
+        <h2 class="text-2xl font-bold mb-4">Weekly Income</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <p class="text-sm text-gray-600">Total Income (7d)</p>
+            <p class="text-3xl font-bold mt-1">
+              £<span x-text="totalIncome.toFixed(2)"></span>
+            </p>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg text-center">
+            <p class="text-sm text-gray-600">Platform Fee (0.5%)</p>
+            <p class="text-3xl font-bold mt-1">
+              £<span x-text="platformFee.toFixed(2)"></span>
+            </p>
+          </div>
+        </div>
+        <div>
+          <canvas x-ref="chart" height="150"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bookings Section -->
+    <section x-show="tab==='bookings'" class="mb-6">
+      <div class="bg-white shadow-xl rounded-2xl p-6">
+        <h2 class="text-2xl font-bold mb-4">All Bookings</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full leading-normal">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">User</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Journey</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Date</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Final Price</th>
+                <th class="px-5 py-3"></th>
+              </tr>
+            </thead>
+
+            {% for booking in bookings %}
+            <tbody
+              x-data="{
+                open: false,
+                subtotal: {{ booking.total_cost }},
+                discount: {{ (booking.discount_amount / booking.total_cost * 100) if booking.discount_amount else 0 }},
+                get finalPrice() {
+                  return (this.subtotal * (1 - this.discount/100)).toFixed(2);
+                }
+              }"
+            >
+              <tr class="border-b hover:bg-gray-50">
+                <td class="px-5 py-4 text-sm">{{ booking.user.firstname }} {{ booking.user.lastname }}</td>
+                <td class="px-5 py-4 text-sm">{{ booking.journey.start_location }} → {{ booking.journey.end_location }}</td>
+                <td class="px-5 py-4 text-sm">{{ booking.booking_date.strftime('%d %b %Y') }}</td>
+                <td class="px-5 py-4 text-sm">£<span x-text="finalPrice"></span></td>
+                <td class="px-5 py-4 text-sm text-right">
+                  <button @click="open = !open"
+                          :aria-expanded="open"
+                          class="p-1 rounded hover:bg-gray-200 focus:outline-none">
+                    <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 9l-7 7-7-7"/>
+                    </svg>
+                    <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+
+              <tr x-show="open" x-cloak class="bg-gray-50">
+                <td colspan="5" class="px-6 py-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                    <div>
+                      <p class="text-sm text-gray-600">Subtotal</p>
+                      <p class="font-bold">£<span x-text="subtotal.toFixed(2)"></span></p>
+                    </div>
+                    <div>
+                      <label for="discount-{{ booking.id }}" class="text-sm text-gray-600">Discount %</label>
+                      <input id="discount-{{ booking.id }}"
+                             type="number"
+                             x-model.number="discount"
+                             @input="discount = Math.min(Math.max(discount, 0), 100)"
+                             step="0.1" min="0" max="100"
+                             class="w-full p-1 border rounded text-sm" />
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">Final Price</p>
+                      <p class="font-bold">£<span x-text="finalPrice"></span></p>
+                    </div>
+                    <div class="text-right">
+                      <button @click.prevent="
+                        fetch('{{ url_for('update_booking_discount', booking_id=booking.id) }}', {
+                          method: 'POST',
+                          headers: { 'Content-Type':'application/json' },
+                          body: JSON.stringify({ discount_percentage: discount })
+                        })
+                        .then(r => r.ok ? r.json() : Promise.reject())
+                        .then(data => {
+                          finalPrice = data.new_final;
+                          $dispatch('booking-updated', { delta: data.delta });
+                        })
+                        .catch(() => $dispatch('notify', { message:'Save failed', type:'error' }));
+                      "
+                      class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            {% endfor %}
+
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support Tickets Section (unchanged) -->
+    <section 
+  x-show="tab==='support'" 
+  x-data="{ statusFilter: 'all', openId: null }" 
+  x-cloak 
+  class="mb-6"
+>
+  <div class="bg-white shadow-xl rounded-2xl p-6 mb-20">
+    <h2 class="text-2xl font-bold mb-4">Support Tickets</h2>
+
+    <!-- Status filters -->
+    <div class="mb-4 flex space-x-2">
+      <button 
+        @click="statusFilter = 'all'" 
+        :class="statusFilter === 'all' 
+          ? 'bg-blue-600 text-white' 
+          : 'bg-gray-100 text-gray-700'" 
+        class="px-4 py-2 rounded-lg text-sm"
+      >All</button>
+      <button 
+        @click="statusFilter = 'open'" 
+        :class="statusFilter === 'open' 
+          ? 'bg-blue-600 text-white' 
+          : 'bg-gray-100 text-gray-700'" 
+        class="px-4 py-2 rounded-lg text-sm"
+      >Open</button>
+      <button 
+        @click="statusFilter = 'closed'" 
+        :class="statusFilter === 'closed' 
+          ? 'bg-blue-600 text-white' 
+          : 'bg-gray-100 text-gray-700'" 
+        class="px-4 py-2 rounded-lg text-sm"
+      >Closed</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">User</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Subject</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Status</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold uppercase">Created</th>
+            <th class="px-5 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in support_issues %}
+            <!-- Summary row: only show if filter matches -->
+            <tr 
+              x-show="statusFilter==='all' || statusFilter==='{{ issue.issue_status }}'"
+              class="border-b hover:bg-gray-50"
+            >
+              <td class="px-5 py-4 text-sm">
+                {{ issue.user.firstname }} {{ issue.user.lastname }}
+              </td>
+              <td class="px-5 py-4 text-sm">{{ issue.issue_type }}</td>
+              <td class="px-5 py-4 text-sm {{ 'text-red-500' if issue.issue_status=='open' else 'text-green-600' }}">
+                {{ issue.issue_status.capitalize() }}
+              </td>
+              <td class="px-5 py-4 text-sm">
+                {{ issue.created_date.strftime('%d %b %Y') }}
+              </td>
+              <td class="px-5 py-4 text-sm">
+                <button 
+                  @click="openId = (openId === {{ issue.id }} ? null : {{ issue.id }})"
+                  :aria-expanded="openId === {{ issue.id }}"
+                  class="focus:outline-none"
+                >
+                  <svg x-show="openId !== {{ issue.id }}" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                  <svg x-show="openId === {{ issue.id }}" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                       viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Detail row: show only when this one is open *and* matches the filter -->
+            <tr 
+              x-show="(statusFilter==='all' || statusFilter==='{{ issue.issue_status }}') && openId==={{ issue.id }}" 
+              x-cloak 
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              class="bg-gray-50"
+            >
+              <td colspan="5" class="px-6 py-4 space-y-4">
+                <p class="text-sm"><strong>Description:</strong> {{ issue.issue_description }}</p>
+                <p class="text-sm"><strong>Resolved:</strong>
+                  {% if issue.resolved_date %}
+                    {{ issue.resolved_date.strftime('%d %b %Y') }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </p>
+
+                <form action="{{ url_for('update_support_status', issue_id=issue.id) }}" method="POST" class="inline-block">
+                  <input 
+                    type="hidden" 
+                    name="new_status" 
+                    value="{{ 'closed' if issue.issue_status=='open' else 'open' }}"
+                  >
+                  <button 
+                    type="submit"
+                    class="px-4 py-2 rounded-lg text-white {{ 'bg-green-600 hover:bg-green-700' if issue.issue_status=='open' else 'bg-red-600 hover:bg-red-700' }}"
+                  >
+                    Mark as {{ 'Closed' if issue.issue_status=='open' else 'Open' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function financeDashboard(){
+  return {
+    // default to 0 if undefined
+    totalIncome: {{ total_income|default(0) }},
+    platformFee: {{ platform_fee|default(0) }},
+    chart: null,
+    init(){
+      this.chart = new Chart(this.$refs.chart.getContext('2d'), {
+        type: 'bar',
+        data: {
+          // default to empty arrays if not passed in
+          labels: {{ income_labels|default([])|tojson }},
+          datasets:[{
+            label: 'Fee',
+            data: {{ income_data|default([])|tojson }},
+            backgroundColor:'rgba(59,130,246,0.5)'
+          }]
+        },
+        options:{ responsive:true }
+      });
+    },
+    onBookingUpdated(delta){
+      this.totalIncome += delta;
+      this.platformFee = this.totalIncome * 0.005;
+      let ds = this.chart.data.datasets[0].data;
+      ds[ds.length-1] += delta;
+      this.chart.update();
+    }
+  }
+}
+
+function filterUsers(){
+  const filter = document.getElementById('userFilter').value.toLowerCase();
+  document.querySelectorAll('#userTable tr').forEach(row=>{
+    const name = row.cells[1].textContent.toLowerCase();
+    const email = row.cells[2].textContent.toLowerCase();
+    row.style.display = (name.includes(filter)||email.includes(filter))?'':'none';
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Journeys{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-10">
+    <h2 class="text-3xl font-bold mb-6">Unclaimed Journeys</h2>
+
+    {% if journeys %}
+        <div class="space-y-4">
+            {% for journey in journeys %}
+            <div class="p-4 bg-white rounded shadow flex justify-between items-center">
+                <div>
+                    <p><strong>{{ journey.start_location }}</strong> → <strong>{{ journey.end_location }}</strong></p>
+                    <p class="text-gray-600">Date: {{ journey.journey_date }} | Seats: {{ journey.available_seats }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('claim_journey', journey_id=journey.id) }}">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Claim</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-600">There are currently no unclaimed journeys.</p>
+    {% endif %}
+</div>
+{% endblock %}

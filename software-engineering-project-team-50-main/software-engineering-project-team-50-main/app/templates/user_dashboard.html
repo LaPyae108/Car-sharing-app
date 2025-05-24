@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard - Car Share{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-8 flex flex-col md:flex-row gap-6">
+
+
+  <!-- Sidebar -->
+  <aside class="w-full md:w-64 bg-white shadow-xl rounded-2xl p-6 border border-gray-100 sticky md:top-0 md:min-h-screen">
+
+    <div class="text-center mb-8">
+      <h3 class="text-2xl font-bold text-gray-800">Menu</h3>
+      <p class="text-sm text-gray-500">Dashboard Access</p>
+    </div>
+
+    <nav class="flex flex-col gap-4 text-sm">
+      <button onclick="showTab('home')" id="nav-home" class="nav-item w-full text-left py-3 px-4 rounded-lg bg-blue-50 hover:bg-blue-100 font-semibold transition">
+        Home
+      </button>
+      <button onclick="showTab('bookings')" id="nav-bookings" class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-blue-100 font-semibold transition">
+        My Bookings
+      </button>
+      <button onclick="showTab('saved')" id="nav-saved" class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-blue-100 font-semibold transition">
+        Saved Routes
+      </button>
+      <button onclick="openSupportModal()" class="w-full text-left py-3 px-4 rounded-lg hover:bg-blue-100 font-semibold transition">
+        Contact Support
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-4 md:px-8 py-10 space-y-16">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="w-full" id="flash-messages">
+        {% for category, message in messages %}
+          <div class="flex items-center justify-between px-4 py-3 rounded-lg shadow-md text-sm font-semibold mb-4 border transition
+            {{ 'bg-green-100 text-green-800 border-green-300' if category == 'success' else 'bg-red-100 text-red-800 border-red-300' }}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="ml-4 text-xl leading-none font-bold">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Welcome Banner -->
+    <header class="py-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-center text-white rounded-2xl shadow-md">
+      <h2 class="text-4xl font-bold">Welcome, {{ current_user.firstname }} {{ current_user.lastname }}!</h2>
+      <p class="text-lg mt-2">Manage your rides and travel with ease.</p>
+    </header>
+
+    <!-- Home Tab -->
+    <div id="tab-home" class="tab-content space-y-16">
+
+      <!-- Create Journey -->
+      <section class="text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Create a New Journey</h2>
+        <a href="{{ url_for('create_journey') }}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition">
+          Create Journey
+        </a>
+      </section>
+
+      <!-- Trip Progress -->
+      <section class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg text-center">
+        {% if trips < 4 %}
+          <p class="text-gray-700 text-lg">You’ve taken <strong>{{ trips }} / 4</strong> trips this week.</p>
+          <p class="mt-2 text-gray-900 font-semibold">{{ 4 - trips }} more to unlock 10% off!</p>
+        {% else %}
+          <p class="text-gray-700 text-lg">🎉 You’ve unlocked <strong>10% off</strong> all bookings this week!</p>
+        {% endif %}
+      </section>
+
+      <!-- Upcoming Journeys -->
+      <section id="your-upcoming-trips" class="py-12 text-left">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Your Upcoming Journeys</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {% for journey in user_journeys|selectattr("journey_status", "ne", "cancelled")|sort(attribute='journey_date') %}
+            {% if journey.journey_date >= current_date %}
+              <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border-l-4 border-blue-500 relative flex flex-col justify-between h-full">
+                <div>
+                  <div class="flex flex-col items-start mb-4">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">
+                      {{ journey.start_location.split(',')[-2]|default(journey.start_location) }} → {{ journey.end_location.split(',')[-2]|default(journey.end_location) }}
+                    </h3>
+                    <div class="flex justify-between w-full text-sm text-gray-500">
+                      <span>Date: {{ journey.journey_date.strftime('%d %b %Y') }}</span>
+                      <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                        {{ journey.journey_time.strftime('%H:%M') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                  <button onclick="toggleModal('journey', {{ journey.id }})" class="text-sm text-blue-600 hover:underline font-semibold">
+                    Details
+                  </button>
+                  <a href="{{ url_for('manage_journey', journey_id=journey.id) }}" class="text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg transition">
+                    Manage
+                  </a>
+                </div>
+                {% set item = journey %}
+                {% set type = 'journey' %}
+                {% include '_modal.html' %}
+              </div>
+            {% endif %}
+          {% else %}
+            <p class="col-span-full text-center text-gray-500">No upcoming journeys.</p>
+          {% endfor %}
+        </div>
+      </section>
+      
+      
+    </div>
+
+    <!-- Bookings Tab -->
+    <div id="tab-bookings" class="tab-content hidden space-y-10">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">My Bookings</h2>
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {% for booking in user_bookings if booking.booking_status != 'cancelled' %}
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border-l-4 border-green-500 relative flex flex-col justify-between h-full">
+            <div>
+              <div class="flex flex-col items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                  {{ booking.journey.start_location.split(',')[-2]|default(booking.journey.start_location) }} → {{ booking.journey.end_location.split(',')[-2]|default(booking.journey.end_location) }}
+                </h3>
+                <div class="flex justify-between w-full text-sm text-gray-500">
+                  <span>{{ booking.journey.journey_date.strftime('%d %b %Y') }}</span>
+                  <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                    {{ booking.booking_status|capitalize }}
+                  </span>
+                </div>
+              </div>
+              <p class="text-sm text-gray-500">Time: {{ booking.journey.journey_time.strftime('%H:%M') }}</p>
+            </div>
+            <div class="flex justify-center space-x-4 mt-6">
+              <button onclick="toggleModal('booking', {{ booking.id }})" class="text-sm text-blue-600 hover:underline font-semibold">
+                Details
+              </button>
+            </div>
+            {% set item = booking %}
+            {% set type = 'booking' %}
+            {% include '_modal.html' %}
+          </div>
+        {% else %}
+          <p class="col-span-full text-center text-gray-500">No bookings yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    
+    
+
+    <!-- Saved Routes Tab -->
+    <div id="tab-saved" class="tab-content hidden space-y-10">
+      <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Saved Routes</h2>
+      <div class="space-y-6 max-w-2xl mx-auto">
+        {% if current_user.saved_routes %}
+          {% for route in current_user.saved_routes %}
+            <div class="flex justify-between bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition">
+              <span class="font-medium">{{ route.start_location }} → {{ route.end_location }}</span>
+              <a href="{{ url_for('rebook', route_id=route.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">Rebook</a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-center text-gray-500">You haven’t saved any routes yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </main>
+</div>
+
+{% include 'support_modal.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+{% endblock %}

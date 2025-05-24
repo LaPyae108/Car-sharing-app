@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Driver Dashboard - Car Share{% endblock %}
+
+{% block content %}
+<header class="py-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center shadow">
+  <h1 class="text-4xl font-bold">Welcome, {{ current_user.firstname }}!</h1>
+  <p class="text-lg mt-2">Manage your rides and bookings below.</p>
+</header>
+
+<div class="max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6 mt-8">
+  <!-- Sidebar -->
+  <aside class="w-full md:w-1/4 bg-white p-5 rounded-2xl shadow-lg">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">Menu</h2>
+    <ul class="space-y-3 text-base text-blue-600 font-medium">
+      <li><a href="{{ url_for('create_journey') }}" class="hover:underline">➕ Create Journey</a></li>
+      <li><a href="{{ url_for('available_journeys') }}" class="hover:underline">🚗 Available Journeys</a></li>
+      <li><a href="{{ url_for('logout') }}" class="text-red-500 hover:underline">🔓 Log Out</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="w-full md:w-3/4 space-y-12">
+
+    <!-- Confirmed Bookings Section -->
+    <section>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">✅ Confirmed Bookings</h2>
+      {% if confirmed_bookings %}
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for booking in confirmed_bookings %}
+        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
+          <h3 class="text-lg font-semibold text-gray-800">{{ booking.journey.start_location }} → {{ booking.journey.end_location }}</h3>
+          <p class="text-sm text-gray-600 mt-1">📅 Date: {{ booking.journey.journey_date.strftime('%d %b %Y') }}</p>
+          <p class="text-sm text-gray-600">🧍‍♂️ Passenger: {{ booking.user.firstname }} {{ booking.user.lastname }}</p>
+          <p class="text-sm text-gray-600">🪑 Seats: {{ booking.passenger_count }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-gray-500 italic">You have no confirmed bookings yet.</p>
+      {% endif %}
+    </section>
+
+  </main>
+</div>
+
+<footer class="bg-gray-100 text-center py-6 mt-12 text-sm text-gray-500">
+  &copy; 2025 Car Share. All rights reserved.
+</footer>
+{% endblock %}

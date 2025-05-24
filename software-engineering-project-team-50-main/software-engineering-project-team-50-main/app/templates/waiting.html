@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Please Wait - Car Share{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+  <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Hang Tight!</h1>
+    <p class="text-gray-600 text-lg">Waiting for a driver to accept your journey...</p>
+    <div class="mt-6">
+      <div class="animate-spin inline-block w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const journeyId = {{ summary.journey_id }} ; 
+
+  const checkDriverClaim = () => {
+    fetch(`/check_journey_status/${journeyId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.claimed) {
+          window.location.href = "{{ url_for('user_dashboard') }}";
+        }
+      })
+      .catch(err => console.error("Error checking journey status:", err));
+  };
+
+  setInterval(checkDriverClaim, 5000); // poll every 5 seconds
+</script>
+{% endblock %}
+

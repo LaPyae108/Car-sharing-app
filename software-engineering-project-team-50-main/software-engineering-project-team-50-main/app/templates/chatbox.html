@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <!-- Load Socket.IO from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Connect to the Socket.IO server
+        var socket = io();
+
+        // Listen for messages from the server
+        socket.on('message', function(msg) {
+          var messagesDiv = document.getElementById('messages');
+          var messageElement = document.createElement('p');
+          messageElement.textContent = msg;
+          messagesDiv.appendChild(messageElement);
+        });
+
+        // Send a message when the button is clicked
+        document.getElementById('sendButton').addEventListener('click', function() {
+          var input = document.getElementById('messageInput');
+          if (input.value) {
+            socket.send(input.value);
+            input.value = '';
+          }
+        });
+      });
+    </script>
+</head>
+<body>
+    <h1>Real-Time Chat</h1>
+    <div id="messages" style="border:1px solid #ccc; height:300px; overflow-y:scroll; padding:10px;"></div>
+    <input type="text" id="messageInput" placeholder="Enter your message" />
+    <button id="sendButton">Send</button>
+</body>
+</html>

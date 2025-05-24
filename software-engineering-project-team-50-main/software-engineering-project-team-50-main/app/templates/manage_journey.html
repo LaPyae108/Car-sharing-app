@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Manage Journey – Car Share{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 mt-8 flex flex-col md:flex-row gap-6">
+  <!-- Left Form Panel -->
+  <div class="w-full md:w-1/3 bg-white p-6 shadow-lg rounded-2xl sticky top-24 overflow-y-auto h-[calc(100vh-6rem)]">
+    <h1 class="text-2xl font-bold mb-4 text-indigo-700">Manage Your Journey</h1>
+    <!-- Instruction -->
+  <p class="text-sm text-gray-600 mb-4">
+    <strong>Note:</strong> You can change the journey details only <span class="text-red-600 font-semibold">before a driver claims the journey</span>.
+  </p>
+    <form method="POST" action="{{ url_for('update_journey', journey_id=journey.id) }}" class="space-y-4">
+      <div>
+        <label for="start_location" class="block text-sm font-medium text-gray-700">Start Location</label>
+        <input
+          type="text"
+          id="start_location"
+          name="start_location"
+          value="{{ journey.start_location }}"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {% if not can_edit %}disabled{% endif %}
+        >
+      </div>
+
+      <div>
+        <label for="end_location" class="block text-sm font-medium text-gray-700">End Location</label>
+        <input
+          type="text"
+          id="end_location"
+          name="end_location"
+          value="{{ journey.end_location }}"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {% if not can_edit %}disabled{% endif %}
+        >
+      </div>
+
+      <div>
+        <label for="journey_date" class="block text-sm font-medium text-gray-700">Departure Date</label>
+        <input
+          type="date"
+          id="journey_date"
+          name="journey_date"
+          value="{{ journey.journey_date }}"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {% if not can_edit %}disabled{% endif %}
+        >
+      </div>
+
+      <div>
+        <label for="journey_time" class="block text-sm font-medium text-gray-700">Departure Time</label>
+        <input
+          type="time"
+          id="journey_time"
+          name="journey_time"
+          value="{{ journey.journey_time.strftime('%H:%M') }}"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {% if not can_edit %}disabled{% endif %}
+        >
+      </div>
+
+      <div>
+        <label for="available_seats" class="block text-sm font-medium text-gray-700">Available Seats</label>
+        <select
+          id="available_seats"
+          name="available_seats"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {% if not can_edit %}disabled{% endif %}
+        >
+          {% for seat in range(1, 11) %}
+            <option value="{{ seat }}" {% if journey.available_seats == seat %}selected{% endif %}>
+              {{ seat }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="pt-2 space-y-2">
+        {% if can_edit %}
+        <button type="submit" class="btn-primary w-full">Save Changes</button>
+        {% endif %}
+      </div>
+    </form>
+
+    <hr class="my-6">
+
+    <!-- Cancel Journey -->
+    <form method="POST" action="{{ url_for('cancel_journey', journey_id=journey.id) }}" onsubmit="return confirm('Are you sure you want to cancel this journey?')">
+      <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg">
+        Cancel Journey
+      </button>
+    </form>
+  </div>
+
+  <!-- Map Panel -->
+  <div class="w-full md:w-2/3 rounded-2xl shadow-lg overflow-hidden relative">
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 py-6 px-6 rounded-t-2xl">
+      <h2 class="text-white text-2xl font-bold">Route Preview</h2>
+      <p class="text-blue-100 text-sm">Your route will appear based on your start and end locations.</p>
+    </div>
+    <div id="map" class="w-full h-[calc(100vh-14rem)]"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function initMap() {
+    let map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 53.7996, lng: -1.5468 },
+      zoom: 14,
+    });
+
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+
+    const geocoder = new google.maps.Geocoder();
+    let startMarker, endMarker;
+
+    const startInput = document.getElementById("start_location");
+    const endInput = document.getElementById("end_location");
+
+    const startAutocomplete = new google.maps.places.Autocomplete(startInput, { componentRestrictions: { country: "uk" } });
+    const endAutocomplete = new google.maps.places.Autocomplete(endInput, { componentRestrictions: { country: "uk" } });
+
+    startAutocomplete.addListener("place_changed", updateRoute);
+    endAutocomplete.addListener("place_changed", updateRoute);
+
+    function updateRoute() {
+      if (startInput.value && endInput.value) {
+        directionsService.route({
+          origin: startInput.value,
+          destination: endInput.value,
+          travelMode: "DRIVING"
+        }, (response, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(response);
+          }
+        });
+      }
+    }
+
+    window.onload = updateRoute;
+  }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuB9qqPqPpywUt4Pesd7mhg6ZugsJB44Y&libraries=places&callback=initMap" async defer></script>
+{% endblock %}

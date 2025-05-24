@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful - Car Share{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white px-6 py-12">
+  <div class="bg-white shadow-lg rounded-2xl p-10 text-center max-w-md w-full">
+    <div class="text-green-500 mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h2>
+    <p class="text-gray-600 mb-6">Your trip has been confirmed and added to your account. Thank you for sharing a ride!</p>
+    <a href="{{ url_for('user_dashboard') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">Go to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

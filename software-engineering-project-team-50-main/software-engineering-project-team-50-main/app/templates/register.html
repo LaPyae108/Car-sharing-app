@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Car Share{% endblock %}
+{% block hide_nav %}{% endblock %}
+{% block hide_footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 space-y-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-extrabold text-gray-800">Create your account</h2>
+      <p class="mt-2 text-sm text-gray-500">Join the car sharing experience today</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2">
+          {% for category, message in messages %}
+            <div class="flash-message px-4 py-2 rounded-md text-sm font-medium
+                        {% if category == 'success' %}
+                          bg-green-100 text-green-800 border border-green-300
+                        {% elif category == 'danger' %}
+                          bg-red-100 text-red-800 border border-red-300
+                        {% elif category == 'info' %}
+                          bg-blue-100 text-blue-800 border border-blue-300
+                        {% else %}
+                          bg-gray-100 text-gray-800 border border-gray-300
+                        {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('register') }}" class="space-y-5">
+      <div>
+        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+        <input type="text" name="firstname" id="firstname" required
+               class="mt-1 w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+      </div>
+
+      <div>
+        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+        <input type="text" name="lastname" id="lastname" required
+               class="mt-1 w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+      </div>
+
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" name="email" id="email" required
+               class="mt-1 w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" name="password" id="password" required
+               class="mt-1 w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+      </div>
+
+      <div>
+        <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <input type="password" name="confirm_password" id="confirm_password" required
+               class="mt-1 w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+      </div>
+
+      <div>
+        <button type="submit"
+                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition">
+          Register
+        </button>
+      </div>
+    </form>
+
+    <div class="text-center mt-4">
+      <p class="text-sm text-gray-600">
+        Already have an account?
+        <a href="{{ url_for('login') }}" class="font-medium text-blue-600 hover:underline">Log in</a>
+      </p>
+    </div>
+
+    <div class="mt-6">
+      <a href="{{ url_for('google_login') }}"
+         class="w-full block text-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-150">
+        Sign up with Google
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(flash => {
+      flash.style.opacity = '0';
+      flash.style.transition = 'opacity 0.5s ease-out';
+      setTimeout(() => flash.remove(), 500);
+    });
+  }, 3000);
+</script>
+
+{% endblock %}

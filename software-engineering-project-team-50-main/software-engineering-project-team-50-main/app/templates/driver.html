@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Driver Dashboard - Car Share{% endblock %}
+
+{% block content %}
+<header class="py-12 bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white rounded-lg w-full max-w-7xl mx-auto mt-6">
+    <h2 class="text-4xl font-bold">Welcome, {{ current_user.firstname }}!</h2>
+    <p class="text-xl mt-2">Manage your rides and booking requests efficiently.</p>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 mt-6 flex flex-col md:flex-row gap-6">
+    <!-- Sidebar -->
+<aside class="w-full md:w-1/4 bg-gradient-to-b from-white to-gray-50 shadow-xl rounded-2xl p-6 space-y-8 border border-gray-200">
+    <div class="text-center">
+      <div class="w-20 h-20 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold">
+        {{ current_user.firstname[0] }}{{ current_user.lastname[0] }}
+      </div>
+      <h3 class="text-xl font-bold text-gray-800">{{ current_user.firstname }} {{ current_user.lastname }}</h3>
+      <p class="text-sm text-gray-500">Driver Dashboard</p>
+    </div>
+  
+    <nav class="flex flex-col gap-4 text-sm font-medium">
+      <a href="{{ url_for('create_journey') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create Journey
+      </a>
+      <a href="{{ url_for('available_journeys') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 018 0v2m-4-4a4 4 0 10-8 0v2a4 4 0 018 0v2"/>
+        </svg>
+        Available Journeys
+      </a>
+      <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+        </svg>
+        Log Out
+      </a>
+    </nav>
+  </aside>
+  
+    <!-- Main Content -->
+    <main class="w-full md:w-3/4 space-y-12">
+        <!-- ✅ Section: Confirmed Bookings -->
+        <section>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Your Confirmed Bookings</h3>
+            {% if confirmed_bookings %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for booking in confirmed_bookings %}
+                <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
+                    <h4 class="text-xl font-semibold text-gray-800">{{ booking.journey.start_location }} → {{ booking.journey.end_location }}</h4>
+                    <p class="text-gray-600 mt-1">📅 Date: {{ booking.journey.journey_date.strftime('%d %b %Y') }}</p>
+                    <p class="text-gray-600">🧍‍ Passenger: {{ booking.user.firstname }} {{ booking.user.lastname }}</p>
+                    <p class="text-gray-600">🪑 Seats: {{ booking.passenger_count }}</p>
+
+                    <div class="mt-4">
+                      <h4 class="text-sm font-semibold">Chat</h4>
+                      <div id="chat-box-{{ booking.id }}" class="border h-32 overflow-y-auto p-2 bg-gray-50 text-sm rounded">
+                        {% for message in booking.chat_messages %}
+                          <div class="{{ 'text-right' if message.sender_id == current_user.id else 'text-left' }}">
+                            <div class="inline-block {{ 'bg-blue-100' if message.sender_id == current_user.id else 'bg-gray-200' }} p-2 rounded-md">
+                              {{ message.message_text }} <span class="ml-2 text-xs text-gray-500">{{ message.timestamp.strftime('%H:%M') }}</span>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <div class="mt-2 flex">
+                        <input id="chat-input-{{ booking.id }}" class="flex-1 border p-2 rounded text-sm" placeholder="Type a message...">
+                        <button class="ml-2 px-4 bg-blue-500 text-white rounded text-sm" onclick="sendModalMessage({{ booking.id }})">Send</button>
+                      </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 italic">No confirmed journeys yet.</p>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+  function sendModalMessage(bookingId) {
+    const input = document.getElementById(`chat-input-${bookingId}`);
+    const message = input.value.trim();
+    if (!message) return;
+
+    fetch('/send_message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        message: message
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const box = document.getElementById(`chat-box-${bookingId}`);
+        const time = data.message.timestamp;
+        const msgHTML = `
+          <div class="text-right">
+            <div class="inline-block bg-blue-100 p-2 rounded-md">
+              ${message} <span class="ml-2 text-xs text-gray-500">${time}</span>
+            </div>
+          </div>`;
+        box.innerHTML += msgHTML;
+        input.value = '';
+        box.scrollTop = box.scrollHeight;
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const allInputs = document.querySelectorAll('[id^="chat-input-"]');
+    allInputs.forEach(input => {
+      const bookingId = input.id.split('-').pop();
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendModalMessage(bookingId);
+      });
+    });
+  });
+</script>
+
+<footer class="bg-gray-100 py-8 text-center mt-6 rounded-lg">
+    <p class="text-gray-600">&copy; 2025 Car Share. All rights reserved.</p>
+</footer>
+{% endblock %}

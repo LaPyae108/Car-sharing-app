@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Income Report - Car Share{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6 mt-8 bg-white rounded-2xl shadow-md">
+
+  <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Income Report (Last 7 Days)</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
+    <div class="bg-gray-100 p-6 rounded-lg">
+      <p class="text-xl font-semibold text-gray-700">Total Collected</p>
+      <p class="text-2xl font-bold text-green-600 mt-2">£{{ '%.2f'|format(total_income) }}</p>
+    </div>
+    <div class="bg-gray-100 p-6 rounded-lg">
+      <p class="text-xl font-semibold text-gray-700">Admin Profit (0.5%)</p>
+      <p class="text-2xl font-bold text-blue-600 mt-2">£{{ '%.2f'|format(platform_fee) }}</p>
+    </div>
+    <div class="bg-gray-100 p-6 rounded-lg">
+      <p class="text-xl font-semibold text-gray-700">Drivers' Earnings</p>
+      <p class="text-2xl font-bold text-purple-600 mt-2">£{{ '%.2f'|format(driver_income) }}</p>
+    </div>
+  </div>
+
+  <h3 class="text-2xl font-bold text-gray-800 mb-4">Booking Details</h3>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm leading-normal">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="px-5 py-3 text-left">Passenger</th>
+          <th class="px-5 py-3 text-left">Driver</th>
+          <th class="px-5 py-3 text-left">Journey</th>
+          <th class="px-5 py-3 text-left">Paid (£)</th>
+          <th class="px-5 py-3 text-left">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+        <tr class="border-b">
+          <td class="px-5 py-4">{{ booking.user.firstname }} {{ booking.user.lastname }}</td>
+          <td class="px-5 py-4">
+            {% if booking.journey.driver %}
+              {{ booking.journey.driver.firstname }} {{ booking.journey.driver.lastname }}
+            {% else %}
+              <span class="text-gray-400">No driver</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-4">{{ booking.journey.start_location }} → {{ booking.journey.end_location }}</td>
+          <td class="px-5 py-4">£{{ '%.2f'|format(booking.total_cost) }}</td>
+          <td class="px-5 py-4">
+            {% if booking.booking_status == 'cancelled' %}
+              <span class="text-red-600 font-semibold">Cancelled</span>
+            {% else %}
+              <span class="text-green-600 font-semibold">Confirmed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

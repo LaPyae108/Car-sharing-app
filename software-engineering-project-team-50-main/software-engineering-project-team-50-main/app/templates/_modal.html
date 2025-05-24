@@ -1,0 +1,248 @@
+<div id="modal-{{ type }}-{{ item.id }}" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden" onclick="if (event.target === this) toggleModal('{{ type }}', {{ item.id }})">
+  <div class="bg-white w-full max-w-2xl p-8 rounded-lg shadow-lg relative overflow-y-auto max-h-[80vh] space-y-4 text-base">
+    <button 
+      class="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+      onclick="toggleModal('{{ type }}', {{ item.id }})"
+      aria-label="Close {{ type }} details"
+    >&times;</button>
+
+    <h2 class="text-xl font-bold mb-4">{{ type.title() }} Details</h2>
+
+    {% if type == 'booking' %}
+      <!-- Booking Details -->
+      <p><strong>From:</strong> {{ item.journey.start_location }}</p>
+      <p><strong>To:</strong> {{ item.journey.end_location }}</p>
+      <p><strong>Date:</strong> {{ item.journey.journey_date.strftime('%d %B %Y') }}</p>
+      <p><strong>Time:</strong> {{ item.journey.journey_time.strftime('%H:%M') }}</p>
+      <p><strong>Status:</strong> {{ item.booking_status }}</p>
+      <p><strong>Booking ID:</strong> {{ item.id }}</p>
+      {% if item.passenger_notes %}
+        <p><strong>Notes:</strong> {{ item.passenger_notes }}</p>
+      {% endif %}
+
+      {% if item.id not in past_booking_ids %}
+        <!-- Chat Section (Future Bookings Only) -->
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold mb-2">Chat</h4>
+          <div 
+            id="chat-box-{{ item.id }}" 
+            class="border h-48 overflow-y-auto p-2 bg-gray-50 text-sm rounded"
+          >
+            {% for message in item.chat_messages %}
+              <div class="{{ 'text-right' if message.sender_id == current_user.id else 'text-left' }} mb-2">
+                <div class="inline-block {{ 'bg-blue-100' if message.sender_id == current_user.id else 'bg-gray-200' }} p-2 rounded-md max-w-[80%]">
+                  {{ message.message_text }}
+                  <span class="ml-2 text-xs text-gray-500">{{ message.timestamp.strftime('%H:%M') }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="mt-2 flex gap-2">
+            <input
+              id="chat-input-{{ item.id }}"
+              class="flex-1 border p-2 rounded text-sm"
+              placeholder="Type a message..."
+            >
+            <button
+              class="px-4 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
+              onclick="sendMessage({{ item.id }})"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      {% endif %}
+        <!-- cancelation function-->
+        {% if item.journey %}
+        {% set journey_datetime = item.journey.journey_date.strftime('%Y-%m-%d') + 'T' + item.journey.journey_time.strftime('%H:%M') %}
+        {% set now = namespace(now_time=none) %}
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const pickupTime = new Date("{{ journey_datetime }}");
+            const now = new Date();
+            if (pickupTime > now) {
+              const cancelBtn = document.getElementById('cancel-btn-{{ item.id }}');
+              if (cancelBtn) {
+                cancelBtn.classList.remove('hidden');
+              }
+            }
+          });
+        </script>
+      
+        <!-- Cancel Button (hidden by default) -->
+        <div class="text-center mt-6 hidden" id="cancel-btn-{{ item.id }}">
+          <form method="POST" action="{{ url_for('cancel_journey', journey_id=item.journey.id) }}">
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded shadow-lg">
+              Cancel Booking
+            </button>
+          </form>
+        </div>
+      {% endif %}
+      {% if item.id in past_booking_ids %}
+        <!-- Rating Section (Past Bookings Only) -->
+        <div class="mt-8 text-center border-t pt-6">
+          <p class="font-semibold mb-4">Rate Your Journey</p>
+          <div id="stars-{{ item.id }}" class="flex justify-center space-x-2 mb-4" data-rating="0">
+            {% for star in range(1,6) %}
+              <svg
+                id="star-{{ item.id }}-{{ star }}"
+                onclick="setRating({{ item.id }}, {{ star }})"
+                class="w-8 h-8 cursor-pointer text-gray-400 fill-current hover:text-yellow-400"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M12 .587l3.668 7.431L24 9.748l-6 5.849L19.335 24 12 20.202 4.665 24 6 15.597 0 9.748l8.332-1.73z"/>
+              </svg>
+            {% endfor %}
+          </div>
+          <div class="flex justify-center gap-4">
+            <button 
+              onclick="submitRating({{ item.id }})"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
+            >
+              Submit Rating
+            </button>
+            <textarea id="report-comment-{{ item.id }}" class="w-full border rounded p-2 text-sm mb-4" placeholder="Share your complaint..."></textarea>
+<button 
+  class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded"
+  onclick="submitReport({{ item.id }})"
+>
+  Report Issue
+</button>
+          </div>
+          <div 
+            id="thankyou-{{ item.id }}"
+            class="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg hidden"
+          >
+            Thank you!
+          </div>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <!-- Journey Details -->
+      <p><strong>From:</strong> {{ item.start_location }}</p>
+      <p><strong>To:</strong> {{ item.end_location }}</p>
+      <p><strong>Date:</strong> {{ item.journey_date.strftime('%d %B %Y') }}</p>
+      <p><strong>Time:</strong> {{ item.journey_time.strftime('%H:%M') }}</p>
+      <p><strong>Available Seats:</strong> {{ item.available_seats }}</p>
+        <form method="POST" action="{{ url_for('save_route') }}">
+    <input type="hidden" name="start_location" value="{{ item.start_location }}">
+    <input type="hidden" name="end_location" value="{{ item.end_location }}">
+    <button type="submit" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+      Save Journey
+    </button>
+  </form>
+
+</form>
+
+    {% endif %}
+    
+  </div>
+</div>
+
+<script>
+// Unified Message Handling
+function sendMessage(bookingId) {
+  const input = document.getElementById(`chat-input-${bookingId}`);
+  const message = input.value.trim();
+  if (!message) return;
+
+  fetch('/send_message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      booking_id: bookingId,
+      message: message
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      const chatBox = document.getElementById(`chat-box-${bookingId}`);
+      const timestamp = new Date(data.message.timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      chatBox.innerHTML += `
+        <div class="text-right mb-2">
+          <div class="inline-block bg-blue-100 p-2 rounded-md max-w-[80%]">
+            ${message}
+            <span class="ml-2 text-xs text-gray-500">${timestamp}</span>
+          </div>
+        </div>`;
+      
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  });
+}
+
+// Enter Key Support
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[id^="chat-input-"]').forEach(input => {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const bookingId = input.id.split('-')[2];
+        sendMessage(bookingId);
+      }
+    });
+  });
+});
+
+// Rating System
+function setRating(bookingId, rating) {
+  const stars = document.querySelectorAll(`#stars-${bookingId} svg`);
+  stars.forEach((star, index) => {
+    star.classList.toggle('text-yellow-400', index < rating);
+    star.classList.toggle('text-gray-400', index >= rating);
+  });
+  document.getElementById(`stars-${bookingId}`).dataset.rating = rating;
+}
+
+async function submitRating(bookingId) {
+  const rating = document.getElementById(`stars-${bookingId}`).dataset.rating;
+  const comment = document.getElementById(`rating-comment-${bookingId}`).value;
+
+  const response = await fetch('/submit_rating', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      booking_id: bookingId,
+      rating: rating,
+      comment: comment
+    })
+  });
+
+  if (response.ok) {
+    const thankyou = document.getElementById(`thankyou-${bookingId}`);
+    thankyou.classList.remove('hidden');
+    setTimeout(() => thankyou.classList.add('hidden'), 3000);
+  }
+}
+
+// Modal Toggle
+function toggleModal(type, id) {
+  const modal = document.getElementById(`modal-${type}-${id}`);
+  modal.classList.toggle('hidden');
+
+}
+async function submitReport(bookingId) {
+  const message = document.getElementById(`report-comment-${bookingId}`).value.trim();
+  if (!message) return alert("Please enter a complaint.");
+
+  const res = await fetch('/report_issue', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ booking_id: bookingId, message })
+  });
+
+  if (res.ok) {
+    alert("Report submitted successfully.");
+  } else {
+    alert("Failed to submit report.");
+  }
+}
+
+</script>
