@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Car Share</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg w-full">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img class="h-8 w-8" src="logo.png" alt="Logo">
+                <span class="text-lg font-semibold text-gray-800">Car Share</span>
+            </a>
+
+            <!-- <div class="hidden md:flex space-x-6">
+                <span class="text-gray-800 font-semibold">Admin Dashboard</span>
+            </div> -->
+
+            <div class="hidden md:flex space-x-3">
+                <a href="index.html"
+                    class="px-4 py-2 text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="py-12 bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white">
+        <h2 class="text-4xl font-bold">Admin Dashboard</h2>
+        <p class="text-xl mt-2">Manage users and journeys effectively.</p>
+    </header>
+
+    <section class="py-12 max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-gray-900 text-center">Users</h2>
+        <div class="bg-white shadow-lg rounded-lg overflow-x-auto mt-6">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Username
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Admin
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-white border-b">
+                        <td class="px-5 py-5 text-sm">John Doe</td>
+                        <td class="px-5 py-5 text-sm">john@example.com</td>
+                        <td class="px-5 py-5 text-sm">No</td>
+                    </tr>
+                    <tr class="bg-white border-b">
+                        <td class="px-5 py-5 text-sm">Jane Smith</td>
+                        <td class="px-5 py-5 text-sm">jane@example.com</td>
+                        <td class="px-5 py-5 text-sm">Yes</td>
+                    </tr>
+                    <tr class="bg-white">
+                        <td class="px-5 py-5 text-sm">Bob Johnson</td>
+                        <td class="px-5 py-5 text-sm">bob@example.com</td>
+                        <td class="px-5 py-5 text-sm">No</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="py-12 max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-gray-900 text-center">All Journeys</h2>
+        <div class="bg-white shadow-lg rounded-lg overflow-x-auto mt-6">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Start Location
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            End Location
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Available Seats
+                        </th>
+                        <th
+                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            User
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-white border-b">
+                        <td class="px-5 py-5 text-sm">New York</td>
+                        <td class="px-5 py-5 text-sm">Boston</td>
+                        <td class="px-5 py-5 text-sm">2025-05-15</td>
+                        <td class="px-5 py-5 text-sm">3</td>
+                        <td class="px-5 py-5 text-sm">John Doe</td>
+                    </tr>
+                    <tr class="bg-white border-b">
+                        <td class="px-5 py-5 text-sm">Los Angeles</td>
+                        <td class="px-5 py-5 text-sm">San Francisco</td>
+                        <td class="px-5 py-5 text-sm">2025-05-20</td>
+                        <td class="px-5 py-5 text-sm">2</td>
+                        <td class="px-5 py-5 text-sm">Jane Smith</td>
+                    </tr>
+                    <tr class="bg-white">
+                        <td class="px-5 py-5 text-sm">Chicago</td>
+                        <td class="px-5 py-5 text-sm">Detroit</td>
+                        <td class="px-5 py-5 text-sm">2025-05-25</td>
+                        <td class="px-5 py-5 text-sm">4</td>
+                        <td class="px-5 py-5 text-sm">Bob Johnson</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="py-12 max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-gray-900 text-center">Weekly income</h2>
+        <div class="bg-white shadow-lg rounded-lg overflow-x-auto mt-6">
+            <canvas id="incomeChart" class="min-w-full h-48"></canvas>
+        </div>
+    </section>
+
+    <footer class="bg-gray-100 py-8 text-center">
+        <p class="text-gray-600">&copy; 2025 Car Share. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('incomeChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Platform Income(0.5% of the booking cost) (£)',
+                    data: [560, 230, 220, 80],
+                    borderColor: '#2196F3',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `£${value}`
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
